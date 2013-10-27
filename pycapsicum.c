@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012, Mark Peek <mark@peek.org>
+ * Copyright (c) 2013, Chris Stillson <stillson@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,41 +30,7 @@
 #include <Python.h>
 #include <sys/capability.h>
 #include <errno.h>
-
-
-/*
- * cap_enter(): Cause the process to enter capability mode, which will
- * prevent it from directly accessing global namespaces.  System calls will
- * be limited to process-local, process-inherited, or file descriptor
- * operations.  If already in capability mode, a no-op.
- *
- * Currently, process-inherited operations are not properly handled -- in
- * particular, we're interested in things like waitpid(2), kill(2), etc,
- * being properly constrained.  One possible solution is to introduce process
- * descriptors.
- */
-//int     cap_enter(void);
-
-/*
- * cap_getmode(): Are we in capability mode?
- */
-//int     cap_getmode(u_int* modep);
-
-/*
- * cap_new(): Create a new capability derived from an existing file
- * descriptor with the specified rights.  If the existing file descriptor is
- * a capability, then the new rights must be a subset of the existing rights.
- */
-//int     cap_new(int fd, cap_rights_t rights);
-/* cap_rights_t => uint64_t */
-
-/*
- * cap_getrights(): Query the rights on a capability.
- */
-//int     cap_getrights(int fd, cap_rights_t *rightsp);
-
-
-
+#include <fcntl.h>
 
 PyDoc_STRVAR(module_doc, "pycapsicum: Python interface to capsicum\n");
 
@@ -72,6 +38,9 @@ static PyObject *
 capsi_cap_enter(PyObject *self, PyObject *args)
 {
     int rval;
+
+    if (!PyArg_ParseTuple(args, ""))
+        return NULL;
 
     rval = cap_enter();
     if (rval != 0)
@@ -86,6 +55,9 @@ static PyObject *
 capsi_cap_getmode(PyObject *self, PyObject *args)
 {
     u_int rval;
+
+    if (!PyArg_ParseTuple(args, ""))
+        return NULL;
 
     if (cap_getmode(&rval))
     {
@@ -132,11 +104,43 @@ capsi_cap_getrights(PyObject *self, PyObject *args)
     return Py_BuildValue("k", rights);
 
 }
+
+//int openat(int fd, const char *path, int flags, ...);
+static PyObject *
+capsi_openat(PyObject *self, PyObject *args)
+{
+    int fd, flags, rv;
+    const char *path;
+
+    if ( !PyArg_ParseTuple(args, "isi", &fd, &path, &flags) )
+        return NULL;
+
+    rv = openat(fd, path, flags);
+
+    return Py_BuildValue("i", rv);
+}
+
+static PyObject *
+capsi_opendir(PyObject *self, PyObject *args)
+{
+    int flags, rv;
+    const char *path;
+
+    if ( !PyArg_ParseTuple(args, "si", &path, &flags) )
+        return NULL;
+
+    rv = open(path, flags);
+
+    return Py_BuildValue("i", rv);
+}
+
 static PyMethodDef capsi_functions[] = {
-        {"cap_enter",     capsi_cap_enter,      METH_VARARGS, "cap_enter()"},
-        {"cap_getmode",   capsi_cap_getmode,    METH_VARARGS, "cap_getmode()"},
-        {"cap_new",    capsi_cap_new,     METH_VARARGS, "cap_new()"},
-        {"cap_getrights", capsi_cap_getrights,  METH_VARARGS, "cap_getrights()"},
+        {"cap_enter",       capsi_cap_enter,        METH_VARARGS, "cap_enter()"},
+        {"cap_getmode",     capsi_cap_getmode,      METH_VARARGS, "cap_getmode()"},
+        {"cap_new",         capsi_cap_new,          METH_VARARGS, "cap_new()"},
+        {"cap_getrights",   capsi_cap_getrights,    METH_VARARGS, "cap_getrights()"},
+        {"openat",          capsi_openat,           METH_VARARGS, "openat()"},
+        {"opendir",         capsi_opendir,          METH_VARARGS, "opendir()"},
         {NULL,      NULL}   /* Sentinel */
 };
 

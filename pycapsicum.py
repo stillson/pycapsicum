@@ -23,6 +23,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import _pycapsi
+import io
 #General file I/O.
 
 CAP_READ                = 0x0000000000000001L   # read/recv
@@ -187,3 +188,17 @@ def cap_getnew(fd, rights):
 
 def cap_getrights(fd):
     return _pycapsi.cap_getrights(fd)
+
+def get_flag(flags):
+    flagDict = { 'r':0, 'rw':2, 'w':1, }
+    if flags in flagDict:
+        return flagDict[flags]
+    else:
+        raise exceptions.ValueError("bad flag! %s" % flags)
+
+def openat(fd, path, flags='r'):
+    return io.FileIO(_pycapsi.openat(fd, path, get_flag(flags)))
+
+def opendir(path, flags='r'):
+    return _pycapsi.opendir(path, get_flag(flags))
+
