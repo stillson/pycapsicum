@@ -23,33 +23,32 @@ API
     pyc.cap_show(pyc.cap_getrights(f.fileno())
     pyc.cap_show(pyc.cap_getrights(d)
 
-::
 
 For details on the specific functions see the man pages for the man pages.
 
-``cap_show(cap)``
-| cap -> an int capability
-| prints out all the individual capabilities in a cap
+``cap_show(cap)``::
+    cap -> an int capability
+    prints out all the individual capabilities in a cap
 
-``cap_enter()``
-| enters capability mode
+``cap_enter()``::
+    enters capability mode
 
-``cap_getnew(fd, rights)``
-| set rights onto fd (which is a file object or file descriptor (int)
+``cap_getnew(fd, rights)``::
+    set rights onto fd (which is a file object or file descriptor (int)
 
-``cap_getrights(fd)``
-| get rights from a file descriptor or file object
+``cap_getrights(fd)``::
+    get rights from a file descriptor or file object
 
-``openat(d, path, flags='r')``
-| d - fd of a directory
-| path - relative path to open
-| flags - 'r','rw','w'
-| the openat system call. Return a file object
+``openat(d, path, flags='r')``::
+    d - fd of a directory
+    path - relative path to open
+    flags - 'r','rw','w'
+    the openat system call. Return a file object
 
-``opendir(path, flags='r')``
-| path to open
-| flags - 'r', 'rw', 'w'
-| open a directory. returns an int to be passed in to openat
+``opendir(path, flags='r')``::
+    path to open
+    flags - 'r', 'rw', 'w'
+    open a directory. returns an int to be passed in to openat
 
 
 Once you have called ``cap_enter()`` , you can no longer open a file except with
