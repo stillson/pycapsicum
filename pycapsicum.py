@@ -178,18 +178,25 @@ def cap_show(cap):
     return " ".join(out_caps)
 
 def cap_enter():
-    return _pycapsi.cap_enter()
+    _pycapsi.cap_enter()
 
 def cap_getmode():
-    return _pycapsi.cap_getmode()
+    return bool(_pycapsi.cap_getmode())
 
 def cap_getnew(fd, rights):
-    return _pycapsi.cap_getnew(fd, rights)
+    lfd = fd
+    if type(fd) != type(1):
+        lfd = fd.fileno()
+    if(_pycapsi.cap_getnew(fd, rights)):
+        raise Exceptions.Exception("getnew fail")
 
 def cap_getrights(fd):
-    return _pycapsi.cap_getrights(fd)
+    lfd = fd
+    if type(fd) != type(1):
+        lfd = fd.fileno()
+    return _pycapsi.cap_getrights(lfd)
 
-def get_flag(flags):
+def _get_flag(flags):
     flagDict = { 'r':0, 'rw':2, 'w':1, }
     if flags in flagDict:
         return flagDict[flags]
@@ -197,8 +204,8 @@ def get_flag(flags):
         raise exceptions.ValueError("bad flag! %s" % flags)
 
 def openat(fd, path, flags='r'):
-    return io.FileIO(_pycapsi.openat(fd, path, get_flag(flags)))
+    return io.FileIO(_pycapsi.openat(fd, path, _get_flag(flags)))
 
 def opendir(path, flags='r'):
-    return _pycapsi.opendir(path, get_flag(flags))
+    return _pycapsi.opendir(path, _get_flag(flags))
 
